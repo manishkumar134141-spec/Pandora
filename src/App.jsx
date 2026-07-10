@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
+import { createClient } from "@supabase/supabase-js";
 
-// Initialize globally to prevent lag
+// Initialize Supabase Client directly with your project credentials
+const supabaseUrl = "https://kupaigjuylloztvnvsam.supabase.co";
+const supabaseKey = "sb_publishable_6IEQ-8qdPtSfCmRrVWtm4Q_JAGeJsuL";
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+// Initialize tokenizers globally to prevent lag
 const encGPT4o = encodingForModel("gpt-4o");
 const encGPT4 = encodingForModel("gpt-4");
 
@@ -20,12 +26,27 @@ export default function App() {
   const [prompt, setPrompt] = useState("");
   const [tokenCounts, setTokenCounts] = useState({ gpt4o: 0, gpt4: 0 });
   
-  // Auth states
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Real Auth States connected to your backend
+  const [session, setSession] = useState(null);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
 
+  // Listen for Supabase Session Updates
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Tokenization Engine Logic
   useEffect(() => {
     if (!prompt) {
       setTokenCounts({ gpt4o: 0, gpt4: 0 });
@@ -49,24 +70,48 @@ export default function App() {
     const sourceTokens = tokenCounts.gpt4o;
     const finalTokens = model.isClaude ? Math.ceil(sourceTokens * 1.3) : sourceTokens;
     const rawCost = (finalTokens / 1000000) * model.pricePerM;
-    return {
-      tokens: finalTokens,
-      cost: `$${rawCost.toFixed(6)}`
-    };
+    return { tokens: finalTokens, cost: `$${rawCost.toFixed(6)}` };
   };
 
-  const handleSignInSubmit = (e) => {
+  // Live Authentication Engine Handler
+  const handleSignInSubmit = async (e) => {
     e.preventDefault();
-    if (authEmail && authPassword) {
-      setIsAuthenticated(true);
-      setShowAuthModal(false);
-      setAuthEmail("");
-      setAuthPassword("");
+    setAuthLoading(true);
+    
+    // Attempt standard login
+    let { error } = await supabase.auth.signInWithPassword({
+      email: authEmail,
+      password: authPassword,
+    });
+
+    // If account doesn't exist, automatically register them instead
+    if (error && (error.message.includes("Invalid login") || error.message.includes("does not exist"))) {
+       const { error: signUpError } = await supabase.auth.signUp({
+          email: authEmail,
+          password: authPassword,
+       });
+       if (signUpError) {
+           alert(signUpError.message);
+       } else {
+           alert("Account created successfully! Check your email to verify your address.");
+       }
+    } else if (error) {
+       alert(error.message);
+    } else {
+       setShowAuthModal(false);
+       setAuthEmail("");
+       setAuthPassword("");
     }
+    
+    setAuthLoading(false);
+  };
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
   };
 
   const handleProtectedAction = () => {
-    if (!isAuthenticated) {
+    if (!session) {
       setShowAuthModal(true);
     } else {
       document.getElementById('calc').scrollIntoView({ behavior: 'smooth' });
@@ -75,6 +120,7 @@ export default function App() {
 
   return (
     <div className="pandora-ui">
+      {/* Structural layout rules injected cleanly */}
       <style>{`
         html, body, #root {
           margin: 0 !important;
@@ -153,7 +199,6 @@ export default function App() {
         .p-footer { max-width: 1200px; margin: 0 auto; padding: 40px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; margin-top: 40px; box-sizing: border-box; }
         .p-footer p { color: #64748b; font-size: 13px; max-width: 400px; line-height: 1.6; text-align: left; }
 
-        /* Blur Gate overlay for non-authenticated users */
         .auth-gate-overlay {
           position: absolute;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -178,8 +223,6 @@ export default function App() {
           cursor: pointer;
           box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
-
-        /* Modal Dialog Base Styling */
         .modal-backdrop {
           position: fixed;
           top: 0; left: 0; right: 0; bottom: 0;
@@ -231,7 +274,10 @@ export default function App() {
           font-weight: 600;
           cursor: pointer;
           margin-top: 10px;
+          opacity: 1;
+          transition: opacity 0.2s;
         }
+        .auth-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
 
       {/* Navbar */}
@@ -246,8 +292,8 @@ export default function App() {
           <span>GitHub</span>
         </div>
         <div className="p-actions">
-          {isAuthenticated ? (
-            <button className="p-btn-clear" onClick={() => setIsAuthenticated(false)}>Sign Out</button>
+          {session ? (
+            <button className="p-btn-clear" onClick={handleSignOut}>Sign Out</button>
           ) : (
             <>
               <button className="p-btn-clear" onClick={() => setShowAuthModal(true)}>Sign In</button>
@@ -272,8 +318,7 @@ export default function App() {
 
       {/* Main Interactive Canvas */}
       <main className="p-main-card" id="calc">
-        {/* Blur gate overlays dashboard functions until authenticated */}
-        {!isAuthenticated && (
+        {!session && (
           <div className="auth-gate-overlay">
             <h3 style={{marginBottom: '16px', fontWeight: 700}}>Sign in to unlock prompt prediction</h3>
             <button className="auth-gate-btn" onClick={() => setShowAuthModal(true)}>
@@ -301,14 +346,14 @@ export default function App() {
             placeholder="Ask Pandora which route serves this prompt best..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            disabled={!isAuthenticated}
+            disabled={!session}
           />
           <button className="p-input-voice">🎙️ Voice</button>
           <button className="p-input-send">Send →</button>
         </div>
 
         {/* Cost Estimation Table */}
-        {prompt && isAuthenticated && (
+        {prompt && session && (
           <table className="p-table">
             <thead>
               <tr>
@@ -342,25 +387,25 @@ export default function App() {
           <div className="p-icon ic-1">🗄️</div>
           <h3>GPT-5 Tokens</h3>
           <p>Chunk capacity optimized for next-gen models.</p>
-          <div className="p-metric">{isAuthenticated ? tokenCounts.gpt4o.toLocaleString() : "0"}</div>
+          <div className="p-metric">{session ? tokenCounts.gpt4o.toLocaleString() : "0"}</div>
         </div>
         <div className="p-grid-card">
           <div className="p-icon ic-2">⚙️</div>
           <h3>Legacy Tokens</h3>
           <p>Backward-compatible counts across standard models.</p>
-          <div className="p-metric">{isAuthenticated ? tokenCounts.gpt4.toLocaleString() : "0"}</div>
+          <div className="p-metric">{session ? tokenCounts.gpt4.toLocaleString() : "0"}</div>
         </div>
         <div className="p-grid-card">
           <div className="p-icon ic-3">📚</div>
           <h3>Word Count</h3>
           <p>Total separation of natural strings and spaces.</p>
-          <div className="p-metric">{isAuthenticated ? wordCount.toLocaleString() : "0"}</div>
+          <div className="p-metric">{session ? wordCount.toLocaleString() : "0"}</div>
         </div>
         <div className="p-grid-card">
           <div className="p-icon ic-4">🖥️</div>
           <h3>Characters</h3>
           <p>Absolute tracking size for payload analysis.</p>
-          <div className="p-metric">{isAuthenticated ? charCount.toLocaleString() : "0"}</div>
+          <div className="p-metric">{session ? charCount.toLocaleString() : "0"}</div>
         </div>
       </div>
 
@@ -377,7 +422,7 @@ export default function App() {
         </div>
       </footer>
 
-      {/* Auth Modal Box Popover */}
+      {/* Auth Modal Popover */}
       {showAuthModal && (
         <div className="modal-backdrop" onClick={() => setShowAuthModal(false)}>
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
@@ -408,7 +453,9 @@ export default function App() {
                   onChange={(e) => setAuthPassword(e.target.value)}
                 />
               </div>
-              <button type="submit" className="auth-submit-btn">Sign In</button>
+              <button type="submit" className="auth-submit-btn" disabled={authLoading}>
+                {authLoading ? "Authenticating..." : "Sign In / Register"}
+              </button>
             </form>
           </div>
         </div>
