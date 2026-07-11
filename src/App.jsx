@@ -82,6 +82,7 @@ export default function App() {
 
   return (
     <div className="pandora-ui">
+      {/* Structural layout rules injected cleanly */}
       <style>{`
         html, body, #root {
           margin: 0 !important;
@@ -128,15 +129,10 @@ export default function App() {
         .p-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
         .p-subtitle { font-size: 12px; font-weight: 700; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; display: block; }
         .p-card-header h2 { font-size: 24px; font-weight: 700; margin: 0; text-align: left; }
-        .p-header-actions { display: flex; gap: 12px; }
-        .p-pill-dark { background: #0b0f19; color: #fff; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; gap: 6px; align-items: center; cursor: pointer; }
-        .p-pill-light { background: #fff; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
         .p-input-wrapper { background: #0b0f19; border-radius: 20px; padding: 8px 8px 8px 20px; display: flex; align-items: center; gap: 12px; box-sizing: border-box; }
         .p-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; outline: none; padding: 12px 0; font-family: inherit; }
         .p-input::placeholder { color: #64748b; }
-        .p-input-voice { background: #1e293b; color: #94a3b8; border: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
-        .p-input-send { background: #1e293b; color: #fff; border: none; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
         .p-table { width: 100%; border-collapse: collapse; margin-top: 32px; }
         .p-table th { text-align: left; padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; }
@@ -285,10 +281,6 @@ export default function App() {
             <span className="p-subtitle">PROMPT ROUTING PREVIEW</span>
             <h2>Built for lightning-fast AI decisions.</h2>
           </div>
-          <div className="p-header-actions">
-            <button className="p-pill-dark">📎 Attach</button>
-            <button className="p-pill-light">GPT-4 ▾</button>
-          </div>
         </div>
 
         {/* Input Bar */}
@@ -301,8 +293,6 @@ export default function App() {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={!isAuthenticated}
           />
-          <button className="p-input-voice">🎙️ Voice</button>
-          <button className="p-input-send">Send →</button>
         </div>
 
         {/* Cost Estimation Table */}
