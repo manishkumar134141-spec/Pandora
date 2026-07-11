@@ -34,7 +34,7 @@ To run Pandora locally on your machine, follow these steps:
 **1. Clone the repository**
 
 ```bash
-git clone https://github.com/your-username/token-counter.git
+git clone https://github.com/manishkumar134141-spec/Pandora
 cd token-counter
 
 ```
