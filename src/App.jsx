@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
 // ⚠️ Hackathon Key injected directly
-const FIREWORKS_API_KEY = "fw_Kxs22kqvQFUrzvCQ4gweVL";
+const FIREWORKS_API_KEY = "fw_D1QV1pqWD5RDZAiJpuzS6E";
 
 // Initialize tokenizers globally to prevent lag
 const encGPT4o = encodingForModel("gpt-4o");
