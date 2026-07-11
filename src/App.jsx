@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
 // Your actual API key
-const FIREWORKS_API_KEY = "fw_ALRScAdmRZBoxZjmHpWtbe";
+const FIREWORKS_API_KEY = "fw_XeCKrAiJLE5wUYyP9BjZtU";
 
 // Initialize tokenizers globally to prevent lag
 const encGPT4o = encodingForModel("gpt-4o");
