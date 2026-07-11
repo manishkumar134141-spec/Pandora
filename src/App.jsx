@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
-// ⚠️ For a hackathon, pasting the key here is fine, but never do this in production!
+// ⚠️ Hackathon Key injected directly
 const FIREWORKS_API_KEY = "fw_Kxs22kqvQFUrzvCQ4gweVL";
 
 // Initialize tokenizers globally to prevent lag
@@ -112,6 +112,12 @@ export default function App() {
 
       const data = await response.json();
       
+      // Catch server specific status codes and parse diagnostic details to the container view
+      if (!response.ok) {
+        setAiResponse(`API Error (${response.status}): ${data.error?.message || data.message || "Check your API Key settings."}`);
+        return;
+      }
+      
       if (data.choices && data.choices.length > 0) {
         setAiResponse(data.choices[0].message.content);
       } else {
@@ -128,7 +134,6 @@ export default function App() {
   return (
     <div className="pandora-ui">
       <style>{`
-        /* ... Keep all your existing CSS exactly the same ... */
         html, body, #root { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100vw !important; min-height: 100vh !important; background-color: #f8fbff !important; border: none !important; }
         .pandora-ui { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fbff; background-image: radial-gradient(at 0% 0%, rgba(244, 247, 254, 0.8) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(235, 243, 254, 0.8) 0px, transparent 50%); color: #0b0f19; min-height: 100vh; width: 100%; -webkit-font-smoothing: antialiased; }
         .p-nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; max-width: 1200px; margin: 0 auto; box-sizing: border-box; }
@@ -154,12 +159,10 @@ export default function App() {
         .p-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; outline: none; padding: 12px 0; font-family: inherit; }
         .p-input::placeholder { color: #64748b; }
         
-        /* NEW FIREWORKS RUN BUTTON */
         .p-run-btn { background: #1e293b; color: #fff; border: none; padding: 8px 20px; border-radius: 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap; }
         .p-run-btn:hover { background: #334155; }
         .p-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* NEW RESPONSE BOX */
         .ai-response-box { margin-top: 24px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; color: #334155; line-height: 1.6; font-size: 15px; text-align: left; white-space: pre-wrap;}
         .ai-response-title { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;}
 
@@ -254,7 +257,6 @@ export default function App() {
             onChange={(e) => setPrompt(e.target.value)}
             disabled={!isAuthenticated || isGenerating}
           />
-          {/* New Generate Button */}
           {isAuthenticated && prompt.trim() && (
              <button 
                className="p-run-btn" 
