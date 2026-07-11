@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
+// ⚠️ For a hackathon, pasting the key here is fine, but never do this in production!
+const FIREWORKS_API_KEY = "fw_Kxs22kqvQFUrzvCQ4gweVL";
+
 // Initialize tokenizers globally to prevent lag
 const encGPT4o = encodingForModel("gpt-4o");
 const encGPT4 = encodingForModel("gpt-4");
@@ -27,10 +30,15 @@ export default function App() {
   const [authPassword, setAuthPassword] = useState("");
   const [authLoading, setAuthLoading] = useState(false);
 
+  // New States for Fireworks AI
+  const [aiResponse, setAiResponse] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+
   // Tokenization Engine Logic
   useEffect(() => {
     if (!prompt) {
       setTokenCounts({ gpt4o: 0, gpt4: 0 });
+      setAiResponse(""); // Clear response when prompt is empty
       return;
     }
     try {
@@ -58,7 +66,6 @@ export default function App() {
   const handleSignInSubmit = (e) => {
     e.preventDefault();
     setAuthLoading(true);
-    
     setTimeout(() => {
       setIsAuthenticated(true);
       setShowAuthModal(false);
@@ -70,6 +77,7 @@ export default function App() {
 
   const handleSignOut = () => {
     setIsAuthenticated(false);
+    setAiResponse("");
   };
 
   const handleProtectedAction = () => {
@@ -80,38 +88,50 @@ export default function App() {
     }
   };
 
+  // 🔥 FIREWORKS AI INTEGRATION 🔥
+  const generateAIResponse = async () => {
+    if (!prompt.trim()) return;
+    
+    setIsGenerating(true);
+    setAiResponse("");
+
+    try {
+      const response = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${FIREWORKS_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "accounts/fireworks/models/llama-v3p3-70b-instruct",
+          messages: [{ role: "user", content: prompt }],
+          temperature: 0.7,
+          max_tokens: 500
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.choices && data.choices.length > 0) {
+        setAiResponse(data.choices[0].message.content);
+      } else {
+        setAiResponse("Error: Could not generate a response from Fireworks AI.");
+      }
+    } catch (error) {
+      console.error("Fireworks API Error:", error);
+      setAiResponse("Network error while connecting to Fireworks AI.");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="pandora-ui">
-      {/* Structural layout rules injected cleanly */}
       <style>{`
-        html, body, #root {
-          margin: 0 !important;
-          padding: 0 !important;
-          width: 100% !important;
-          max-width: 100vw !important;
-          min-height: 100vh !important;
-          background-color: #f8fbff !important;
-          border: none !important;
-        }
-        .pandora-ui {
-          font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          background-color: #f8fbff;
-          background-image: radial-gradient(at 0% 0%, rgba(244, 247, 254, 0.8) 0px, transparent 50%),
-                            radial-gradient(at 100% 0%, rgba(235, 243, 254, 0.8) 0px, transparent 50%);
-          color: #0b0f19;
-          min-height: 100vh;
-          width: 100%;
-          -webkit-font-smoothing: antialiased;
-        }
-        .p-nav {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 24px 40px;
-          max-width: 1200px;
-          margin: 0 auto;
-          box-sizing: border-box;
-        }
+        /* ... Keep all your existing CSS exactly the same ... */
+        html, body, #root { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100vw !important; min-height: 100vh !important; background-color: #f8fbff !important; border: none !important; }
+        .pandora-ui { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fbff; background-image: radial-gradient(at 0% 0%, rgba(244, 247, 254, 0.8) 0px, transparent 50%), radial-gradient(at 100% 0%, rgba(235, 243, 254, 0.8) 0px, transparent 50%); color: #0b0f19; min-height: 100vh; width: 100%; -webkit-font-smoothing: antialiased; }
+        .p-nav { display: flex; justify-content: space-between; align-items: center; padding: 24px 40px; max-width: 1200px; margin: 0 auto; box-sizing: border-box; }
         .p-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
         .p-logo { background: #000; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; }
         .p-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
@@ -123,7 +143,7 @@ export default function App() {
         .p-hero h1 { font-size: 64px; font-weight: 800; letter-spacing: -2px; margin: 0 0 20px 0; }
         .p-hero p { font-size: 18px; color: #64748b; line-height: 1.6; margin: 0 auto 32px; max-width: 650px; }
         .p-hero-btns { display: flex; justify-content: center; gap: 16px; }
-        .p-btn-hero-black { background: #0b0f19; color: #fff; border: none; padding: 12px 36px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .p-btn-hero-black { background: #0b0f19; color: #fff; border: none; padding: 12px 36px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
         .p-main-card { background: #fff; max-width: 900px; margin: 0 auto 40px; border-radius: 24px; padding: 32px; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; box-sizing: border-box; position: relative; }
         .p-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
@@ -133,6 +153,15 @@ export default function App() {
         .p-input-wrapper { background: #0b0f19; border-radius: 20px; padding: 8px 8px 8px 20px; display: flex; align-items: center; gap: 12px; box-sizing: border-box; }
         .p-input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; outline: none; padding: 12px 0; font-family: inherit; }
         .p-input::placeholder { color: #64748b; }
+        
+        /* NEW FIREWORKS RUN BUTTON */
+        .p-run-btn { background: #1e293b; color: #fff; border: none; padding: 8px 20px; border-radius: 16px; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .p-run-btn:hover { background: #334155; }
+        .p-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* NEW RESPONSE BOX */
+        .ai-response-box { margin-top: 24px; padding: 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; color: #334155; line-height: 1.6; font-size: 15px; text-align: left; white-space: pre-wrap;}
+        .ai-response-title { font-size: 12px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; display: flex; align-items: center; gap: 6px;}
 
         .p-table { width: 100%; border-collapse: collapse; margin-top: 32px; }
         .p-table th { text-align: left; padding: 12px 0; border-bottom: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; }
@@ -154,84 +183,16 @@ export default function App() {
         .p-footer { max-width: 1200px; margin: 0 auto; padding: 40px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; margin-top: 40px; box-sizing: border-box; }
         .p-footer p { color: #64748b; font-size: 13px; max-width: 500px; line-height: 1.6; text-align: left; }
 
-        .auth-gate-overlay {
-          position: absolute;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(255, 255, 255, 0.4);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-          border-radius: 24px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          z-index: 10;
-        }
-        .auth-gate-btn {
-          background: #0b0f19;
-          color: white;
-          border: none;
-          padding: 14px 28px;
-          border-radius: 30px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        }
-        .modal-backdrop {
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(9, 13, 22, 0.3);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 100;
-        }
-        .modal-box {
-          background: white;
-          width: 100%;
-          max-width: 400px;
-          padding: 40px;
-          border-radius: 24px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-          border: 1px solid #f1f5f9;
-          box-sizing: border-box;
-          position: relative;
-        }
-        .modal-close {
-          position: absolute;
-          top: 20px; right: 20px;
-          background: none; border: none;
-          font-size: 20px; cursor: pointer; color: #94a3b8;
-        }
+        .auth-gate-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; }
+        .auth-gate-btn { background: #0b0f19; color: white; border: none; padding: 14px 28px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(9, 13, 22, 0.3); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 100; }
+        .modal-box { background: white; width: 100%; max-width: 400px; padding: 40px; border-radius: 24px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border: 1px solid #f1f5f9; box-sizing: border-box; position: relative; }
+        .modal-close { position: absolute; top: 20px; right: 20px; background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px; }
-        .form-input {
-          width: 100%;
-          padding: 12px 16px;
-          border: 1px solid #e2e8f0;
-          border-radius: 12px;
-          font-size: 15px;
-          outline: none;
-          box-sizing: border-box;
-        }
+        .form-input { width: 100%; padding: 12px 16px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 15px; outline: none; box-sizing: border-box; }
         .form-input:focus { border-color: #0b0f19; }
-        .auth-submit-btn {
-          width: 100%;
-          background: #0b0f19;
-          color: white;
-          border: none;
-          padding: 14px;
-          border-radius: 12px;
-          font-size: 15px;
-          font-weight: 600;
-          cursor: pointer;
-          margin-top: 10px;
-          opacity: 1;
-          transition: opacity 0.2s;
-        }
+        .auth-submit-btn { width: 100%; background: #0b0f19; color: white; border: none; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 10px; opacity: 1; transition: opacity 0.2s; }
         .auth-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
       `}</style>
 
@@ -291,9 +252,27 @@ export default function App() {
             placeholder="Ask Pandora which route serves this prompt best..."
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            disabled={!isAuthenticated}
+            disabled={!isAuthenticated || isGenerating}
           />
+          {/* New Generate Button */}
+          {isAuthenticated && prompt.trim() && (
+             <button 
+               className="p-run-btn" 
+               onClick={generateAIResponse}
+               disabled={isGenerating}
+             >
+               {isGenerating ? "⚡ Running..." : "Execute 🚀"}
+             </button>
+          )}
         </div>
+
+        {/* Fireworks AI Output Box */}
+        {aiResponse && (
+          <div className="ai-response-box">
+             <div className="ai-response-title">🎆 Fireworks AI Response (Llama 3)</div>
+             {aiResponse}
+          </div>
+        )}
 
         {/* Cost Estimation Table */}
         {prompt && isAuthenticated && (
@@ -352,7 +331,6 @@ export default function App() {
         </div>
       </div>
 
-      {/* Footer */}
       <footer className="p-footer">
         <div>
           <h4 style={{margin: '0 0 12px 0', letterSpacing: '2px', fontSize: '14px', textAlign: 'left'}}>PANDORA</h4>
