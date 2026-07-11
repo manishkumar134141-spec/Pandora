@@ -103,7 +103,8 @@ export default function App() {
           "Authorization": `Bearer ${FIREWORKS_API_KEY}`
         },
         body: JSON.stringify({
-          model: "accounts/fireworks/models/llama-v3p1-8b-instruct", // <-- CORRECT MODEL ID
+          // Swapped to an open, ungated model that doesn't require manual TOS acceptance
+          model: "accounts/fireworks/models/mixtral-8x7b-instruct", 
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
           max_tokens: 500
@@ -271,7 +272,7 @@ export default function App() {
         {/* Fireworks AI Output Box */}
         {aiResponse && (
           <div className="ai-response-box">
-             <div className="ai-response-title">🎆 Fireworks AI Response (Llama 3)</div>
+             <div className="ai-response-title">🎆 Fireworks AI Response (Mixtral 8x7B)</div>
              {aiResponse}
           </div>
         )}
