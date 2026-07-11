@@ -103,8 +103,8 @@ export default function App() {
           "Authorization": `Bearer ${FIREWORKS_API_KEY}`
         },
         body: JSON.stringify({
-          // Swapped to an open, ungated model that doesn't require manual TOS acceptance
-          model: "accounts/fireworks/models/mixtral-8x7b-instruct", 
+          // Guaranteed ungated Serverless model
+          model: "accounts/fireworks/models/qwen2p5-72b-instruct", 
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
           max_tokens: 500
@@ -113,7 +113,6 @@ export default function App() {
 
       const data = await response.json();
       
-      // Catch server specific status codes and parse diagnostic details to the container view
       if (!response.ok) {
         setAiResponse(`API Error (${response.status}): ${data.error?.message || data.message || "Check your API Key settings."}`);
         return;
@@ -272,7 +271,7 @@ export default function App() {
         {/* Fireworks AI Output Box */}
         {aiResponse && (
           <div className="ai-response-box">
-             <div className="ai-response-title">🎆 Fireworks AI Response (Mixtral 8x7B)</div>
+             <div className="ai-response-title">🎆 Fireworks AI Response (Qwen 2.5 72B)</div>
              {aiResponse}
           </div>
         )}
