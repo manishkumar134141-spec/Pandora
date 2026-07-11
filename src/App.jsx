@@ -54,12 +54,11 @@ export default function App() {
     return { tokens: finalTokens, cost: `$${rawCost.toFixed(6)}` };
   };
 
-  // Hackathon Mock Login - Instantly accepts any input
+  // Hackathon Mock Login
   const handleSignInSubmit = (e) => {
     e.preventDefault();
     setAuthLoading(true);
     
-    // Simulate a tiny 600ms network delay so it looks real to the judges
     setTimeout(() => {
       setIsAuthenticated(true);
       setShowAuthModal(false);
@@ -83,7 +82,6 @@ export default function App() {
 
   return (
     <div className="pandora-ui">
-      {/* Structural layout rules injected cleanly */}
       <style>{`
         html, body, #root {
           margin: 0 !important;
@@ -115,8 +113,7 @@ export default function App() {
         }
         .p-brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
         .p-logo { background: #000; color: #fff; width: 28px; height: 28px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 14px; }
-        .p-links { display: flex; gap: 32px; font-size: 14px; color: #64748b; font-weight: 500; }
-        .p-actions { display: flex; align-items: center; gap: 16px; }
+        .p-actions { display: flex; align-items: center; gap: 16px; margin-left: auto; }
         .p-btn-clear { background: none; border: none; font-size: 14px; font-weight: 600; cursor: pointer; color: #0b0f19; }
         .p-btn-black { background: #0b0f19; color: #fff; border: none; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; cursor: pointer; }
         
@@ -125,8 +122,7 @@ export default function App() {
         .p-hero h1 { font-size: 64px; font-weight: 800; letter-spacing: -2px; margin: 0 0 20px 0; }
         .p-hero p { font-size: 18px; color: #64748b; line-height: 1.6; margin: 0 auto 32px; max-width: 650px; }
         .p-hero-btns { display: flex; justify-content: center; gap: 16px; }
-        .p-btn-white { background: #fff; border: 1px solid #e2e8f0; padding: 12px 28px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; }
-        .p-btn-hero-black { background: #0b0f19; color: #fff; border: none; padding: 12px 28px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; }
+        .p-btn-hero-black { background: #0b0f19; color: #fff; border: none; padding: 12px 36px; border-radius: 30px; font-size: 15px; font-weight: 600; cursor: pointer; shadow: 0 4px 12px rgba(0,0,0,0.05); }
 
         .p-main-card { background: #fff; max-width: 900px; margin: 0 auto 40px; border-radius: 24px; padding: 32px; box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; box-sizing: border-box; position: relative; }
         .p-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; }
@@ -160,7 +156,7 @@ export default function App() {
         .p-metric { font-size: 32px; font-weight: 800; margin-top: auto; padding-top: 20px; color: #0b0f19; }
 
         .p-footer { max-width: 1200px; margin: 0 auto; padding: 40px; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; margin-top: 40px; box-sizing: border-box; }
-        .p-footer p { color: #64748b; font-size: 13px; max-width: 400px; line-height: 1.6; text-align: left; }
+        .p-footer p { color: #64748b; font-size: 13px; max-width: 500px; line-height: 1.6; text-align: left; }
 
         .auth-gate-overlay {
           position: absolute;
@@ -249,11 +245,6 @@ export default function App() {
           <div className="p-logo">P</div>
           Pandora
         </div>
-        <div className="p-links">
-          <span>Features</span>
-          <span>Docs</span>
-          <span>GitHub</span>
-        </div>
         <div className="p-actions">
           {isAuthenticated ? (
             <button className="p-btn-clear" onClick={handleSignOut}>Sign Out</button>
@@ -275,7 +266,6 @@ export default function App() {
           <button className="p-btn-hero-black" onClick={handleProtectedAction}>
             Start building
           </button>
-          <button className="p-btn-white">View docs</button>
         </div>
       </header>
 
@@ -377,11 +367,6 @@ export default function App() {
         <div>
           <h4 style={{margin: '0 0 12px 0', letterSpacing: '2px', fontSize: '14px', textAlign: 'left'}}>PANDORA</h4>
           <p>A modern platform for routing AI workloads across cache, local AMD compute, and cloud inference with confidence.</p>
-        </div>
-        <div className="p-links">
-          <span>Features</span>
-          <span>GitHub</span>
-          <span>Docs</span>
         </div>
       </footer>
 
