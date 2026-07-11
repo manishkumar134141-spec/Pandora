@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
-// ⚠️ Hackathon Key injected directly
-const FIREWORKS_API_KEY = "fw_D1QV1pqWD5RDZAiJpuzS6E";
+// YOUR REAL API KEY IS BACK!
+const FIREWORKS_API_KEY = "fw_Kxs22kqvQFUrzvCQ4gweVL";
 
 // Initialize tokenizers globally to prevent lag
 const encGPT4o = encodingForModel("gpt-4o");
@@ -103,8 +103,7 @@ export default function App() {
           "Authorization": `Bearer ${FIREWORKS_API_KEY}`
         },
         body: JSON.stringify({
-          // Guaranteed ungated Serverless model
-          model: "accounts/fireworks/models/qwen2p5-72b-instruct", 
+          model: "accounts/fireworks/models/llama-v3p1-8b-instruct", 
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
           max_tokens: 500
@@ -271,7 +270,7 @@ export default function App() {
         {/* Fireworks AI Output Box */}
         {aiResponse && (
           <div className="ai-response-box">
-             <div className="ai-response-title">🎆 Fireworks AI Response (Qwen 2.5 72B)</div>
+             <div className="ai-response-title">🎆 Fireworks AI Response (Llama 3.1 8B)</div>
              {aiResponse}
           </div>
         )}
