@@ -103,7 +103,7 @@ export default function App() {
           "Authorization": `Bearer ${FIREWORKS_API_KEY}`
         },
         body: JSON.stringify({
-          model: "accounts/fireworks/models/llama-v3p3-70b-instruct",
+          model: "accounts/fireworks/models/llama-v3p1-8b-instruct", // <-- CORRECT MODEL ID
           messages: [{ role: "user", content: prompt }],
           temperature: 0.7,
           max_tokens: 500
