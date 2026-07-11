@@ -233,7 +233,7 @@ export default function App() {
                onClick={generateAIResponse}
                disabled={isGenerating}
              >
-               {isGenerating ? "⚡ Running..." : "Execute 🚀"}
+               {isGenerating ? "⚡ Running..." : "Execute "}
              </button>
           )}
         </div>
