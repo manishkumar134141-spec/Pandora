@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { encodingForModel } from "js-tiktoken";
 
-// YOUR REAL API KEY IS BACK!
+// Your actual API key
 const FIREWORKS_API_KEY = "fw_ALRScAdmRZBoxZjmHpWtbe";
 
 // Initialize tokenizers globally to prevent lag
@@ -96,17 +96,17 @@ export default function App() {
     setAiResponse("");
 
     try {
-      const response = await fetch("https://api.fireworks.ai/inference/v1/chat/completions", {
+      // Changed to the embeddings endpoint
+      const response = await fetch("https://api.fireworks.ai/inference/v1/embeddings", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${FIREWORKS_API_KEY}`
         },
         body: JSON.stringify({
-          model: "accounts/fireworks/models/llama-v3p1-8b-instruct", 
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-          max_tokens: 500
+          // Guaranteed Serverless embedding model
+          model: "accounts/fireworks/models/qwen3-embedding-8b", 
+          input: prompt // Embeddings use 'input' instead of 'messages'
         })
       });
 
@@ -117,8 +117,11 @@ export default function App() {
         return;
       }
       
-      if (data.choices && data.choices.length > 0) {
-        setAiResponse(data.choices[0].message.content);
+      // Formatting the embedding response to prove it worked
+      if (data.data && data.data.length > 0) {
+          const embeddingVector = data.data[0].embedding;
+          const preview = embeddingVector.slice(0, 5).map(n => n.toFixed(4)).join(", ");
+          setAiResponse(`Success! Generated a ${embeddingVector.length}-dimensional vector.\nPreview: [${preview}...]`);
       } else {
         setAiResponse("Error: Could not generate a response from Fireworks AI.");
       }
@@ -270,7 +273,7 @@ export default function App() {
         {/* Fireworks AI Output Box */}
         {aiResponse && (
           <div className="ai-response-box">
-             <div className="ai-response-title">🎆 Fireworks AI Response (Llama 3.1 8B)</div>
+             <div className="ai-response-title">🎆 Fireworks AI Response (Qwen3 Embedding 8B)</div>
              {aiResponse}
           </div>
         )}
